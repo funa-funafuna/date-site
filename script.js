@@ -114,8 +114,16 @@ function dodgeNoButton(event) {
   const buttonWidth = noButton.offsetWidth;
   const buttonHeight = noButton.offsetHeight;
   const noScale = Math.max(0.34, 1 - state.noAttempts * 0.1);
-  const yesScale = Math.min(1.65, 1 + state.noAttempts * 0.12);
-  const yesWidth = Math.min(zoneRect.width - 52, 124 + state.noAttempts * 8);
+  const yesProgress = Math.min(state.noAttempts, 4) / 4;
+  const maxYesWidth = Math.min(zoneRect.width - 52, 220);
+  const yesWidth = 124 + (maxYesWidth - 124) * yesProgress;
+  const yesHeight = 60 + (92 - 60) * yesProgress;
+  const yesStartLeft = zoneRect.width / 2 - 136;
+  const yesCenterLeft = (zoneRect.width - yesWidth) / 2;
+  const yesLeft = yesStartLeft + (yesCenterLeft - yesStartLeft) * yesProgress;
+  const yesStartTop = 72;
+  const yesCenterTop = Math.max(42, (zoneRect.height - yesHeight) / 2);
+  const yesTop = yesStartTop + (yesCenterTop - yesStartTop) * yesProgress;
   const noPosition = getNoButtonPosition(zoneRect, buttonWidth, buttonHeight, noScale);
 
   noButton.style.left = `${noPosition.left}px`;
@@ -123,12 +131,12 @@ function dodgeNoButton(event) {
   noButton.style.transform = `scale(${noScale}) rotate(${state.noAttempts % 2 ? -7 : 7}deg)`;
 
   yesButton.style.width = `${yesWidth}px`;
-  yesButton.style.minHeight = `${Math.min(86, 60 + state.noAttempts * 4)}px`;
-  yesButton.style.left = `${(zoneRect.width - yesWidth) / 2}px`;
-  yesButton.style.top = `${Math.max(36, 72 - state.noAttempts * 3)}px`;
-  yesButton.style.borderWidth = `${Math.min(6, 2 + state.noAttempts)}px`;
-  yesButton.style.fontSize = `${Math.min(1.7, 1.18 + state.noAttempts * 0.1)}rem`;
-  yesButton.style.transform = `scale(${yesScale})`;
+  yesButton.style.minHeight = `${yesHeight}px`;
+  yesButton.style.left = `${yesLeft}px`;
+  yesButton.style.top = `${yesTop}px`;
+  yesButton.style.borderWidth = `${2 + 4 * yesProgress}px`;
+  yesButton.style.fontSize = `${1.18 + 0.48 * yesProgress}rem`;
+  yesButton.style.transform = "scale(1)";
 
   const hints = [
     "NOは今日は休みみたい。",
