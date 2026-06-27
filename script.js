@@ -9,6 +9,7 @@ const choiceZone = document.getElementById("choice-zone");
 const yesButton = document.getElementById("yes-button");
 const noButton = document.getElementById("no-button");
 const questionHint = document.getElementById("question-hint");
+const secretMark = document.querySelector(".secret-mark");
 const calendarTitle = document.getElementById("calendar-title");
 const calendarGrid = document.getElementById("calendar-grid");
 const prevMonthButton = document.getElementById("prev-month");
@@ -68,6 +69,41 @@ function showScreen(name) {
   requestAnimationFrame(() => screens[name].classList.add("is-entering"));
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getNoButtonPosition(zoneRect, buttonWidth, buttonHeight, noScale) {
+  const maxLeft = Math.max(0, zoneRect.width - buttonWidth * noScale);
+  const maxTop = Math.max(0, zoneRect.height - buttonHeight * noScale);
+
+  if (state.noAttempts <= 4 && secretMark) {
+    const screenRect = screens.question.getBoundingClientRect();
+    const secretRect = secretMark.getBoundingClientRect();
+    const radius = Math.min(86, Math.max(48, secretRect.width * 0.32));
+    const angle = Math.random() * Math.PI * 2;
+    const distance = radius * (0.45 + Math.random() * 0.75);
+    const rawLeft =
+      secretRect.left + secretRect.width / 2 - zoneRect.left + Math.cos(angle) * distance - (buttonWidth * noScale) / 2;
+    const rawTop =
+      secretRect.top + secretRect.height / 2 - zoneRect.top + Math.sin(angle) * distance - (buttonHeight * noScale) / 2;
+    const minLeft = screenRect.left - zoneRect.left + 8;
+    const maxSecretLeft = screenRect.right - zoneRect.left - buttonWidth * noScale - 8;
+    const minTop = screenRect.top - zoneRect.top + 8;
+    const maxSecretTop = screenRect.bottom - zoneRect.top - buttonHeight * noScale - 8;
+
+    return {
+      left: clamp(rawLeft, minLeft, maxSecretLeft),
+      top: clamp(rawTop, minTop, maxSecretTop),
+    };
+  }
+
+  return {
+    left: Math.random() * maxLeft,
+    top: Math.random() * maxTop,
+  };
+}
+
 function dodgeNoButton(event) {
   if (event) {
     event.preventDefault();
@@ -80,11 +116,10 @@ function dodgeNoButton(event) {
   const noScale = Math.max(0.34, 1 - state.noAttempts * 0.1);
   const yesScale = Math.min(1.65, 1 + state.noAttempts * 0.12);
   const yesWidth = Math.min(zoneRect.width - 52, 124 + state.noAttempts * 8);
-  const maxLeft = Math.max(0, zoneRect.width - buttonWidth * noScale);
-  const maxTop = Math.max(0, zoneRect.height - buttonHeight * noScale);
+  const noPosition = getNoButtonPosition(zoneRect, buttonWidth, buttonHeight, noScale);
 
-  noButton.style.left = `${Math.random() * maxLeft}px`;
-  noButton.style.top = `${Math.random() * maxTop}px`;
+  noButton.style.left = `${noPosition.left}px`;
+  noButton.style.top = `${noPosition.top}px`;
   noButton.style.transform = `scale(${noScale}) rotate(${state.noAttempts % 2 ? -7 : 7}deg)`;
 
   yesButton.style.width = `${yesWidth}px`;
